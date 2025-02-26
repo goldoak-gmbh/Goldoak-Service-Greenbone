@@ -7,6 +7,7 @@ import subprocess
 import xmltodict
 import logging
 
+from app.api.core.config import GVM_SOCKET_PATH
 
 ##################################################################
 # Create a Logger                                                #
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 ##################################################################
 
 # Adjust the socket path as needed (e.g., via configuration)
-SOCKET_PATH = "/tmp/gvm/gvmd/gvmd.sock"
+SOCKET_PATH = GVM_SOCKET_PATH
 
 
 ##################################################################
