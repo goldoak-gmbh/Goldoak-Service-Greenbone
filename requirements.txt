@@ -1,0 +1,9 @@
+fastapi==0.115.8
+uvicorn==0.34.0
+python-gvm
+gvm-tools
+xmltodict
+elasticsearch==8.17.1
+
+
+
