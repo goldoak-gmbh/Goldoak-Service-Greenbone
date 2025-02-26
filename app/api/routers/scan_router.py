@@ -29,6 +29,19 @@ async def get_version():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/reports")
+async def fetch_all_reports():
+    try:
+        reports = scan_service.get_all_reports()
+        # Process the XML response to extract a list of report IDs, e.g.:
+        report_list = reports.get("get_reports_response", {}).get("report", [])
+        # Ensure report_list is always a list
+        if not isinstance(report_list, list):
+            report_list = [report_list]
+        return {"reports": report_list}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/scan")
 async def trigger_scan(request: ScanRequest):
     try:
@@ -38,7 +51,4 @@ async def trigger_scan(request: ScanRequest):
         return {"message": "Scan started", "task_id": task_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-
 

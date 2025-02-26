@@ -6,7 +6,6 @@
 import subprocess
 import xmltodict
 import subprocess
-import xmltodict
 import logging
 
 from app.api.core.config import GVM_SOCKET_PATH
@@ -62,6 +61,12 @@ def get_version() -> dict:
     xml = "<get_version/>"
     return run_gvm_command(xml)
 
+def get_all_reports() -> dict:
+    xml = "<get_reports/>"
+    response = run_gvm_command(xml)
+    return response  # then extract report IDs as needed
+
+
 def create_target(name: str, hosts: str) -> str:
     """
     Creates a new target and returns its ID.
@@ -108,3 +113,6 @@ def get_report(report_id: str) -> dict:
     xml = f"<get_report report_id='{report_id}' details='1'/>"
     response = run_gvm_command(xml)
     return response
+
+
+
