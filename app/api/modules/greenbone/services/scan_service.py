@@ -5,6 +5,8 @@
 ##################################################################
 import subprocess
 import xmltodict
+import subprocess
+import xmltodict
 import logging
 
 from app.api.core.config import GVM_SOCKET_PATH
@@ -59,3 +61,50 @@ def get_version() -> dict:
     """
     xml = "<get_version/>"
     return run_gvm_command(xml)
+
+def create_target(name: str, hosts: str) -> str:
+    """
+    Creates a new target and returns its ID.
+    """
+    xml = (
+        f"<create_target>"
+        f"<name>{name}</name>"
+        f"<hosts>{hosts}</hosts>"
+        f"<port_list id='33d0cd82-57c6-11e1-8ed1-406186ea4fc5'/>" # Default port range. Need to make it variable later
+        f"</create_target>"
+    )
+    response = run_gvm_command(xml)
+    # Parse the target id from the response.
+    target_id = response.get("create_target_response", {}).get("@id")
+    return target_id
+
+def create_task(name: str, target_id: str, scan_config_id: str) -> str:
+    """
+    Creates a scan task for the given target and configuration.
+    Returns the task ID.
+    """
+    xml = (
+        f"<create_task>"
+        f"<name>{name}</name>"
+        f"<config id='{scan_config_id}'/>"
+        f"<target id='{target_id}'/>"
+        f"</create_task>"
+    )
+    response = run_gvm_command(xml)
+    task_id = response.get("create_task_response", {}).get("@id")
+    return task_id
+
+def start_task(task_id: str) -> None:
+    """
+    Starts a scan task given its ID.
+    """
+    xml = f"<start_task task_id='{task_id}'/>"
+    run_gvm_command(xml)
+
+def get_report(report_id: str) -> dict:
+    """
+    Retrieves the report details.
+    """
+    xml = f"<get_report report_id='{report_id}' details='1'/>"
+    response = run_gvm_command(xml)
+    return response
