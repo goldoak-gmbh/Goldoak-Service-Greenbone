@@ -6,6 +6,7 @@
 
 import os
 import json
+import glob
 import datetime
 import logging
 import subprocess
@@ -184,7 +185,15 @@ def fetch_and_save_detailed_report(report_id: str) -> None:
     """
     Fetches the detailed report for the given report_id using the new <get_reports>
     command (with filtering, details, and format_id parameters) and saves it to a file.
+    If a file for this report_id already exists in DETAILED_REPORTS_DIR, it will skip saving.
     """
+    # Check if any file exists with the prefix for this report_id
+    pattern = os.path.join(DETAILED_REPORTS_DIR, f"detailed_report_{report_id}_*.xml")
+    existing_files = glob.glob(pattern)
+    if existing_files:
+        logger.info(f"Detailed report for report_id {report_id} already exists. Skipping.")
+        return
+
     xml_command = (
         f'<get_reports report_id="{report_id}" '
         f'filter="apply_overrides=0 levels=hml min_qod=50 first=1 rows=1000 sort=name ignore_pagination=1" '
@@ -192,7 +201,7 @@ def fetch_and_save_detailed_report(report_id: str) -> None:
     )
     detailed_xml = run_gvm_command(xml_command)
     if detailed_xml:
-        # If detailed_xml is a dict, unparse it back to XML
+        # If detailed_xml is a dict, convert it back to an XML string.
         if isinstance(detailed_xml, dict):
             detailed_xml = xmltodict.unparse(detailed_xml, pretty=True)
         timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
