@@ -12,10 +12,15 @@ import subprocess
 import xmltodict
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from app.api.modules.greenbone.services.scan_service import get_all_reports
+from app.api.modules.greenbone.services.scan_service import (
+    get_all_reports,
+    run_gvm_command
+)
+
 from app.api.core.config import (
     GVM_SOCKET_PATH, 
     REPORTS_DIR, 
+    DETAILED_REPORTS_DIR,
     USER, 
     PASSWORD
 )
@@ -163,3 +168,58 @@ def extract_report_task_mapping(raw_response: dict) -> dict:
         if report_id and task_id:
             mapping[report_id] = task_id
     return mapping
+
+###################################################################
+# Functions for Loading the Mapping and Fetching Detailed Reports #           
+#                                                                 #
+# This section contains methods for mapping the report_id with    #
+# the task_id                                                     #
+###################################################################
+
+# Function that fetches the report with the help of the task_id
+def fetch_and_save_all_detailed_reports(mapping: dict) -> None:
+    """
+    For each report ID and its associated task ID in the mapping dictionary,
+    fetch the detailed report XML via gvm-cli and save it to the DETAILED_REPORTS_DIR.
+    """
+    os.makedirs(DETAILED_REPORTS_DIR, exist_ok=True)
+    for report_id, task_id in mapping.items():
+        xml_command = (
+            f'<get_results task_id="{task_id}" details="1" '
+            f'notes_details="1" overrides_details="1" get_counts="1"/>'
+        )
+        detailed_xml = run_gvm_command(xml_command)
+        if detailed_xml:
+            timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+            filename = f"detailed_report_{report_id}_{timestamp}.xml"
+            filepath = os.path.join(DETAILED_REPORTS_DIR, filename)
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(detailed_xml)
+            logger.info(f"Saved detailed report for report_id {report_id} to {filepath}")
+        else:
+            logger.warning(f"Failed to fetch detailed report for task_id {task_id}")
+
+# Reads the file containing the report-task mapping
+def load_report_task_mapping(mapping_dir: str) -> dict:
+    """
+    Loads the latest report-task mapping from the specified directory.
+    """
+    mapping_file = get_latest_mapping_file(mapping_dir)
+    if not mapping_file:
+        logger.warning("No mapping file found in the directory.")
+        return {}
+    with open(mapping_file, "r", encoding="utf-8") as f:
+        mapping = json.load(f)
+    return mapping
+
+# Loads the latest mapping file 
+def get_latest_mapping_file(mapping_dir: str) -> str:
+    """
+    Returns the latest JSON mapping file (by filename order) from the given directory.
+    Assumes filenames contain a timestamp in ISO format.
+    """
+    files = [f for f in os.listdir(mapping_dir) if f.startswith("report_task_mapping_") and f.endswith(".json")]
+    if not files:
+        return None
+    files.sort()  # Lexicographical sort works if timestamp is ISO formatted.
+    return os.path.join(mapping_dir, files[-1])

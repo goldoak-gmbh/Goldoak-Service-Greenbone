@@ -8,7 +8,11 @@ import xmltodict
 import subprocess
 import logging
 
-from app.api.core.config import GVM_SOCKET_PATH
+from app.api.core.config import (
+    GVM_SOCKET_PATH,
+    USER,
+    PASSWORD
+)
 
 ##################################################################
 # Create a Logger                                                #
@@ -38,8 +42,8 @@ def run_gvm_command(xml_command: str) -> dict:
     try:
         cmd = [
             "gvm-cli",
-            "--gmp-username", "admin",
-            "--gmp-password", "admin",
+            "--gmp-username", USER,
+            "--gmp-password", PASSWORD,
             "socket",
             "--socketpath", SOCKET_PATH,
             "--xml", xml_command

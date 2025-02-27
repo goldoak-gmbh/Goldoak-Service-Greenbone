@@ -1,5 +1,5 @@
 # Goldoak-Service-Greenbone
-
+## Directory structure
 ```bash
 greenbone-automation/
 ├── app/
@@ -42,3 +42,38 @@ greenbone-automation/
 ├── requirements.txt                # Python dependencies
 └── README.md
 ```
+
+---
+
+## Docker Compose 
+**Step 1 - Preparing deployment**
+
+```bash
+sudo chown -R 1000:1000 data/
+sudo chmod -R 755 data/
+```
+
+**Step 2 - Create a docker-compose.yml**
+
+```yaml
+version: "3.8"
+
+services:
+  goldoak-module-greenbone:
+    image: ghcr.io/oa-goldoak/goldoak-module-greenbone:v0.4
+    ports:
+      - "8000:8000"
+    environment:
+      # This environment variable is used by your application configuration
+      - GVM_SOCKET_PATH=/tmp/gvmd/gvmd/gvmd.sock
+      - REPORTS_DIR=/app/reports
+      - DETAILED_REPORTS_DIR=/app/detailed_reports
+    volumes:
+      # Mount the host directory containing the Unix socket.
+      # Adjust the host path as needed.
+      - /tmp/gvm/gvmd:/tmp/gvmd/gvmd:ro
+      - /home/azureuser/Goldoak-Service-Greenbone/data/report_ids:/app/reports:rw
+      - /home/azureuser/Goldoak-Service-Greenbone/data/reports:/app/detailed_reports:rw
+    user: "1000:1000"  # Run as non-root user
+```
+
