@@ -11,7 +11,7 @@ import subprocess
 import xmltodict
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from app.api.modules.greenbone.services.scan_service.py import get_all_reports
+from app.api.modules.greenbone.services.scan_service import get_all_reports
 from app.api.core.config import (
     GVM_SOCKET_PATH, 
     REPORTS_DIR, 
