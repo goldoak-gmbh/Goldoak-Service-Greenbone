@@ -42,7 +42,12 @@ def run_report_worker():
     
     # Schedule the job to fetch and save the report-task mapping
     scheduler.add_job(fetch_and_save_report_task_mapping, 'interval', minutes=60)
-    
+
+    # Load the mapping and fetch detailed reports
+    scheduler.add_job(lambda: fetch_and_save_all_detailed_reports(
+                        load_report_task_mapping(REPORTS_DIR)
+                      ), 'interval', minutes=1)
+
     scheduler.start()
     logger.info("Report processing scheduler started.")
     return scheduler
