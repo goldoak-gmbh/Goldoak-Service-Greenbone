@@ -12,7 +12,7 @@ from app.api.routers import scan_router, report_router
 # APP settings                                                   #
 ##################################################################
 app = FastAPI(
-    title="Goldoak Service Greenbone version 0.3",
+    title="Goldoak Service Greenbone version 0.4",
     description="With this module you can gather information of the greenbone vulnerability manager and work with it."
 )
 

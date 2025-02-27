@@ -4,6 +4,6 @@ python-gvm
 gvm-tools
 xmltodict
 elasticsearch==8.17.1
-
+apscheduler
 
 
