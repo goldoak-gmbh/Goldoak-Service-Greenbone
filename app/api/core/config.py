@@ -4,6 +4,6 @@ import os
 # Set the GVM socket path, defaulting to the expected path if not set
 GVM_SOCKET_PATH = os.getenv("GVM_SOCKET_PATH", "/tmp/gvmd/gvmd/gvmd.sock")
 
-
-# You can add more configuration variables here as needed
+# Directory to store fetched reports (can be overridden via env)
+REPORTS_DIR = os.getenv("REPORTS_DIR", "/app/reports")
 
