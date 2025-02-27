@@ -6,7 +6,7 @@
 
 from fastapi import APIRouter, HTTPException
 from app.api.modules.greenbone.services import scan_service  # Ensure get_all_reports is here
-from app.api.modules.greenbone.utils.gvm_parser import parse_all_reports
+from app.api.modules.greenbone.utils.gvm_parser import parse_all_reports, parse_report_summary
 
 
 ##################################################################
@@ -28,7 +28,3 @@ async def get_report_summaries():
         return {"reports": summaries}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-
-

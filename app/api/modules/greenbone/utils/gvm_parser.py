@@ -22,10 +22,15 @@ def parse_report_summary(report: dict) -> dict:
     report_details = report.get("report", {})
     summary = {
         "report_id": report.get("@id"),
-        "report_name": report.get("name"),
+#        "report_name": report.get("name"),
         "scan_start": report_details.get("scan_start"),
         "scan_end": report_details.get("scan_end"),
     }
+
+    # Extract the nested task name if available.
+    task_info = report.get("task", {})
+    summary["task_name"] = task_info.get("name", "N/A")
+    
     # Extract vulnerability count from 'vulns' if available
     vulns = report_details.get("vulns", {})
     summary["vuln_count"] = vulns.get("count")
