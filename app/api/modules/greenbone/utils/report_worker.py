@@ -44,7 +44,7 @@ def run_report_worker():
     scheduler.add_job(fetch_and_save_report_task_mapping, 'interval', minutes=60)
 
     # Load the mapping and fetch detailed reports
-    scheduler.add_job(lambda: fetch_and_save_all_detailed_reports(
+    scheduler.add_job(lambda: fetch_and_save_detailed_report(
                         load_report_task_mapping(REPORTS_DIR)
                       ), 'interval', minutes=1)
 
@@ -230,3 +230,5 @@ def get_latest_mapping_file(mapping_dir: str) -> str:
         return None
     files.sort()  # Lexicographical sort works if timestamp is ISO formatted.
     return os.path.join(mapping_dir, files[-1])
+
+
