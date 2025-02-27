@@ -182,27 +182,29 @@ def extract_report_task_mapping(raw_response: dict) -> dict:
 ###################################################################
 
 # Function that fetches the report with the help of the task_id
-def fetch_and_save_all_detailed_reports(mapping: dict) -> None:
+def fetch_and_save_detailed_report(report_id: str) -> None:
     """
-    For each report ID and its associated task ID in the mapping dictionary,
-    fetch the detailed report XML via gvm-cli and save it to the DETAILED_REPORTS_DIR.
+    Fetches the detailed report for the given report_id using the new <get_reports>
+    command (with filtering, details, and format_id parameters) and saves it to a file.
     """
-    os.makedirs(DETAILED_REPORTS_DIR, exist_ok=True)
-    for report_id, task_id in mapping.items():
-        xml_command = (
-            f'<get_results task_id="{task_id}" details="1" '
-            f'notes_details="1" overrides_details="1" get_counts="1"/>'
-        )
-        detailed_xml = run_gvm_command(xml_command)
-        if detailed_xml:
-            timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-            filename = f"detailed_report_{report_id}_{timestamp}.xml"
-            filepath = os.path.join(DETAILED_REPORTS_DIR, filename)
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(detailed_xml)
-            logger.info(f"Saved detailed report for report_id {report_id} to {filepath}")
-        else:
-            logger.warning(f"Failed to fetch detailed report for task_id {task_id}")
+    xml_command = (
+        f'<get_reports report_id="{report_id}" '
+        f'filter="apply_overrides=0 levels=hml min_qod=50 first=1 rows=1000 sort=name ignore_pagination=1" '
+        f'details="1" format_id="a994b278-1f62-11e1-96ac-406186ea4fc5"/>'
+    )
+    detailed_xml = run_gvm_command(xml_command)
+    if detailed_xml:
+        # If detailed_xml is a dict, unparse it back to XML
+        if isinstance(detailed_xml, dict):
+            detailed_xml = xmltodict.unparse(detailed_xml, pretty=True)
+        timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        filename = f"detailed_report_{report_id}_{timestamp}.xml"
+        filepath = os.path.join(DETAILED_REPORTS_DIR, filename)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(detailed_xml)
+        logger.info(f"Saved detailed report for report_id {report_id} to {filepath}")
+    else:
+        logger.warning(f"Failed to fetch detailed report for report_id {report_id}")
 
 # Reads the file containing the report-task mapping
 def load_report_task_mapping(mapping_dir: str) -> dict:
