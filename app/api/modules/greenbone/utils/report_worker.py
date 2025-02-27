@@ -44,9 +44,7 @@ def run_report_worker():
     scheduler.add_job(fetch_and_save_report_task_mapping, 'interval', minutes=60)
 
     # Load the mapping and fetch detailed reports
-    scheduler.add_job(lambda: fetch_and_save_detailed_report(
-                        load_report_task_mapping(REPORTS_DIR)
-                      ), 'interval', minutes=1)
+    scheduler.add_job(process_all_detailed_reports, 'interval', minutes=1)
 
     scheduler.start()
     logger.info("Report processing scheduler started.")
@@ -230,5 +228,15 @@ def get_latest_mapping_file(mapping_dir: str) -> str:
         return None
     files.sort()  # Lexicographical sort works if timestamp is ISO formatted.
     return os.path.join(mapping_dir, files[-1])
+
+# Helper function that processes all entries in the mapping
+def process_all_detailed_reports():
+    mapping = load_report_task_mapping(REPORTS_DIR)
+    if not mapping:
+        logger.info("No report-task mapping found.")
+        return
+    for report_id in mapping.keys():
+        fetch_and_save_detailed_report(report_id)
+
 
 
