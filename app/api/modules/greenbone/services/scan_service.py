@@ -113,6 +113,3 @@ def get_report(report_id: str) -> dict:
     xml = f"<get_report report_id='{report_id}' details='1'/>"
     response = run_gvm_command(xml)
     return response
-
-
-

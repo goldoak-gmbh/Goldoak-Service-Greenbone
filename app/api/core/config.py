@@ -6,4 +6,9 @@ GVM_SOCKET_PATH = os.getenv("GVM_SOCKET_PATH", "/tmp/gvmd/gvmd/gvmd.sock")
 
 # Directory to store fetched reports (can be overridden via env)
 REPORTS_DIR = os.getenv("REPORTS_DIR", "/app/reports")
+PROCESSED_REPORTS_DIR = os.getenv("PROCESSED_REPORTS_DIR", "/app/processed_reports")
+
+# Credentials 
+USER = "admin"
+PASSWORD = "admin"
 
