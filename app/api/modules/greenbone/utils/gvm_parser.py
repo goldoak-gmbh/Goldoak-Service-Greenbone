@@ -85,27 +85,33 @@ def parse_large_xml(file_path: str):
     
     for event, elem in context:
         try:
-            # Extract report-level metadata
+            # Only process the outer report which has a 'format_id' attribute.
+            if elem.get("format_id") is None:
+                continue
+
+            # Extract metadata from the outer report element
             report_id = elem.get("id")
             owner = elem.findtext("owner/name")
             creation_time = elem.findtext("creation_time")
             modification_time = elem.findtext("modification_time")
             
-            # Extract vulnerability results (if present)
+            # Look for the nested <report> element that holds detailed results
+            inner_report = elem.find("report")
             results = []
-            results_elem = elem.find("results")
-            if results_elem is not None:
-                for result_elem in results_elem.findall("result"):
-                    vuln = {
-                        "result_id": result_elem.get("id"),
-                        "name": result_elem.findtext("name"),
-                        "severity": result_elem.findtext("severity"),
-                        "threat": result_elem.findtext("threat"),
-                        "description": result_elem.findtext("description")
-                    }
-                    results.append(vuln)
+            if inner_report is not None:
+                results_elem = inner_report.find("results")
+                if results_elem is not None:
+                    for result_elem in results_elem.findall("result"):
+                        vuln = {
+                            "result_id": result_elem.get("id"),
+                            "name": result_elem.findtext("name"),
+                            "severity": result_elem.findtext("severity"),
+                            "threat": result_elem.findtext("threat"),
+                            "description": result_elem.findtext("description")
+                        }
+                        results.append(vuln)
             
-            # Prepare our report data dictionary
+            # Prepare the report data dictionary
             report_data = {
                 "report_id": report_id,
                 "owner": owner,
@@ -126,4 +132,3 @@ def parse_large_xml(file_path: str):
             elem.clear()
             while elem.getprevious() is not None:
                 del elem.getparent()[0]
-

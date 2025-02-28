@@ -270,30 +270,35 @@ def process_xml_reports():
     os.makedirs(ARCHIVE_DIR, exist_ok=True)
     os.makedirs(PARSED_DIR, exist_ok=True)
 
-    for file_name in os.listdir(DETAILED_REPORTS_DIR):
-        if file_name.endswith(".xml"):
-            file_path = os.path.join(DETAILED_REPORTS_DIR, file_name)
-            try:
-                # Process and parse the XML file
-                for report_json in parse_large_xml(file_path):
-                    report_id = report_json.get("report_id", "unknown")
-                    vulnerability_count = len(report_json.get("results", []))
-                    logger.info(f"Extracted report {report_id} with {vulnerability_count} vulnerabilities")
-                    
-                    # Save the parsed JSON to a file
-                    timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-                    parsed_filename = f"parsed_report_{report_id}_{timestamp}.json"
-                    parsed_filepath = os.path.join(PARSED_DIR, parsed_filename)
-                    with open(parsed_filepath, "w", encoding="utf-8") as outfile:
-                        json.dump(report_json, outfile, indent=2)
-                    logger.info(f"Saved parsed report to {parsed_filepath}")
+    xml_files = [f for f in os.listdir(DETAILED_REPORTS_DIR) if f.endswith(".xml")]
+    if not xml_files:
+        logger.info("No XML files found for processing.")
+        return
 
-                    # Optionally, later you can ingest this JSON (e.g., call ingest_report(report_json))
+    for file_name in xml_files:
+        file_path = os.path.join(DETAILED_REPORTS_DIR, file_name)
+        try:
+            # Process and parse the XML file.
+            # If you expect multiple reports per file and want separate JSONs:
+            for report_json in parse_large_xml(file_path):
+                report_id = report_json.get("report_id", "unknown")
+                vulnerability_count = len(report_json.get("results", []))
+                logger.info(f"Extracted report {report_id} with {vulnerability_count} vulnerabilities")
                 
-                # Move the processed XML file to the archive directory
-                shutil.move(file_path, os.path.join(ARCHIVE_DIR, file_name))
-                logger.info(f"Processed and archived file: {file_name}")
-            except Exception as e:
-                logger.error(f"Error processing file {file_name}: {e}")
+                # Save the parsed JSON to a file
+                timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+                parsed_filename = f"parsed_report_{report_id}_{timestamp}.json"
+                parsed_filepath = os.path.join(PARSED_DIR, parsed_filename)
+                with open(parsed_filepath, "w", encoding="utf-8") as outfile:
+                    json.dump(report_json, outfile, indent=2)
+                logger.info(f"Saved parsed report to {parsed_filepath}")
+
+                # Optionally, you could call ingest_report(report_json) here.
+
+            # Move the processed XML file to the archive directory
+            shutil.move(file_path, os.path.join(ARCHIVE_DIR, file_name))
+            logger.info(f"Processed and archived file: {file_name}")
+        except Exception as e:
+            logger.error(f"Error processing file {file_name}: {e}")
 
 
