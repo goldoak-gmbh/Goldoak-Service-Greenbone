@@ -9,7 +9,11 @@ REPORTS_DIR = os.getenv("REPORTS_DIR", "/app/reports")
 PROCESSED_REPORTS_DIR = os.getenv("PROCESSED_REPORTS_DIR", "/app/processed_reports")
 DETAILED_REPORTS_DIR = os.getenv("DETAILED_REPORTS_DIR", "/app/detailed_reports")
 ARCHIVE_DIR = os.getenv("ARCHIVE_DIR", "/app/detailed_reports/archive")
+PARSED_DIR = os.path.join(DETAILED_REPORTS_DIR, "parsed")
 
 # Credentials 
 USER = os.getenv("USER", "admin")
 PASSWORD = os.getenv("PASSWORD", "admin")
+
+
+

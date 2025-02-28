@@ -15,7 +15,6 @@ import xmltodict
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.api.modules.greenbone.utils.gvm_parser import (
-    process_xml_reports,
     parse_large_xml
 )
 
@@ -26,7 +25,9 @@ from app.api.modules.greenbone.services.scan_service import (
 
 from app.api.core.config import (
     GVM_SOCKET_PATH, 
+    REPORTS_DIR,
     ARCHIVE_DIR,
+    PARSED_DIR,
     DETAILED_REPORTS_DIR,
     USER, 
     PASSWORD
@@ -259,11 +260,15 @@ def process_all_detailed_reports():
 # Read the XML reports and parse them to JSON 
 def process_xml_reports():
     """
-    Process new XML files in the REPORTS_DIR.
+    Process new XML files in the DETAILED_REPORTS_DIR.
+    For each XML file:
+      - Parse it to JSON.
+      - Save the parsed JSON output to a file in a 'parsed' directory.
+      - Move the original XML file to the ARCHIVE_DIR.
     """
-    # Ensure the archive directory exists
-    if not os.path.exists(ARCHIVE_DIR):
-        os.makedirs(ARCHIVE_DIR)
+    # Ensure necessary directories exist
+    os.makedirs(ARCHIVE_DIR, exist_ok=True)
+    os.makedirs(PARSED_DIR, exist_ok=True)
 
     for file_name in os.listdir(DETAILED_REPORTS_DIR):
         if file_name.endswith(".xml"):
@@ -274,10 +279,21 @@ def process_xml_reports():
                     report_id = report_json.get("report_id", "unknown")
                     vulnerability_count = len(report_json.get("results", []))
                     logger.info(f"Extracted report {report_id} with {vulnerability_count} vulnerabilities")
-                    #ingest_report(report_json)
+                    
+                    # Save the parsed JSON to a file
+                    timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+                    parsed_filename = f"parsed_report_{report_id}_{timestamp}.json"
+                    parsed_filepath = os.path.join(PARSED_DIR, parsed_filename)
+                    with open(parsed_filepath, "w", encoding="utf-8") as outfile:
+                        json.dump(report_json, outfile, indent=2)
+                    logger.info(f"Saved parsed report to {parsed_filepath}")
+
+                    # Optionally, later you can ingest this JSON (e.g., call ingest_report(report_json))
                 
-                # Move processed file to the archive directory
+                # Move the processed XML file to the archive directory
                 shutil.move(file_path, os.path.join(ARCHIVE_DIR, file_name))
                 logger.info(f"Processed and archived file: {file_name}")
             except Exception as e:
                 logger.error(f"Error processing file {file_name}: {e}")
+
+
