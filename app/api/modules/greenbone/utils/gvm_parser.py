@@ -12,6 +12,7 @@ import logging
 import xmltodict
 import json
 from lxml import etree
+from typing import Optional, List, Dict
 from pydantic import BaseModel, ValidationError
 
 # Our packages
@@ -71,10 +72,10 @@ def parse_all_reports(reports_response: dict) -> list:
 # Define a Pydantic model for report-level data
 class VulnerabilityReport(BaseModel):
     report_id: str
-    owner: str
-    creation_time: str
-    modification_time: str
-    results: list  # List of vulnerability result dictionaries
+    owner: Optional[str] = ""         # Allow missing owner
+    creation_time: Optional[str] = ""   # Allow missing creation time
+    modification_time: Optional[str] = ""  # Allow missing modification time
+    results: List[Dict] = []
 
 def parse_large_xml(file_path: str):
     # Stream parse the XML file, looking for <report> elements
