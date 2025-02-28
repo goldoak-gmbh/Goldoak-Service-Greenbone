@@ -7,11 +7,17 @@
 import os
 import json
 import glob
+import shutil
 import datetime
 import logging
 import subprocess
 import xmltodict
 from apscheduler.schedulers.background import BackgroundScheduler
+
+from app.api.modules.greenbone.utils.gvm_parser import (
+    process_xml_reports,
+    parse_large_xml
+)
 
 from app.api.modules.greenbone.services.scan_service import (
     get_all_reports,
@@ -21,6 +27,7 @@ from app.api.modules.greenbone.services.scan_service import (
 from app.api.core.config import (
     GVM_SOCKET_PATH, 
     REPORTS_DIR, 
+    ARCHIVE_DIR,
     DETAILED_REPORTS_DIR,
     USER, 
     PASSWORD
@@ -46,6 +53,9 @@ def run_report_worker():
 
     # Load the mapping and fetch detailed reports
     scheduler.add_job(process_all_detailed_reports, 'interval', minutes=1)
+
+    # Parse the XML files and save them
+    scheduler.add_job(process_xml_reports, 'interval', minutes=1)
 
     scheduler.start()
     logger.info("Report processing scheduler started.")
@@ -247,5 +257,28 @@ def process_all_detailed_reports():
     for report_id in mapping.keys():
         fetch_and_save_detailed_report(report_id)
 
+# Read the XML reports and parse them to JSON 
+def process_xml_reports():
+    """
+    Process new XML files in the REPORTS_DIR.
+    """
+    # Ensure the archive directory exists
+    if not os.path.exists(ARCHIVE_DIR):
+        os.makedirs(ARCHIVE_DIR)
 
-
+    for file_name in os.listdir(REPORTS_DIR):
+        if file_name.endswith(".xml"):
+            file_path = os.path.join(REPORTS_DIR, file_name)
+            try:
+                # Process and parse the XML file
+                for report_json in parse_large_xml(file_path):
+                    report_id = report_json.get("report_id", "unknown")
+                    vulnerability_count = len(report_json.get("results", []))
+                    logger.info(f"Extracted report {report_id} with {vulnerability_count} vulnerabilities")
+                    #ingest_report(report_json)
+                
+                # Move processed file to the archive directory
+                shutil.move(file_path, os.path.join(ARCHIVE_DIR, file_name))
+                logger.info(f"Processed and archived file: {file_name}")
+            except Exception as e:
+                logger.error(f"Error processing file {file_name}: {e}")

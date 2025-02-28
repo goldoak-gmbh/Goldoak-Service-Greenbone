@@ -4,7 +4,9 @@
 ##################################################################
 
 # General
-import subprocess
+import os
+import time
+import shutil
 import subprocess
 import logging
 
@@ -124,3 +126,4 @@ def parse_large_xml(file_path: str):
             elem.clear()
             while elem.getprevious() is not None:
                 del elem.getparent()[0]
+
