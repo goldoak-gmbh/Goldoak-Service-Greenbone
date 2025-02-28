@@ -26,7 +26,6 @@ from app.api.modules.greenbone.services.scan_service import (
 
 from app.api.core.config import (
     GVM_SOCKET_PATH, 
-    REPORTS_DIR, 
     ARCHIVE_DIR,
     DETAILED_REPORTS_DIR,
     USER, 
@@ -266,9 +265,9 @@ def process_xml_reports():
     if not os.path.exists(ARCHIVE_DIR):
         os.makedirs(ARCHIVE_DIR)
 
-    for file_name in os.listdir(REPORTS_DIR):
+    for file_name in os.listdir(DETAILED_REPORTS_DIR):
         if file_name.endswith(".xml"):
-            file_path = os.path.join(REPORTS_DIR, file_name)
+            file_path = os.path.join(DETAILED_REPORTS_DIR, file_name)
             try:
                 # Process and parse the XML file
                 for report_json in parse_large_xml(file_path):
