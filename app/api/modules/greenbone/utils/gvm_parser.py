@@ -79,56 +79,66 @@ class VulnerabilityReport(BaseModel):
     modification_time: Optional[str] = ""  # Allow missing modification time
     results: List[Dict] = []
 
-def parse_large_xml(file_path: str):
-    # Stream parse the XML file, looking for <report> elements
-    context = etree.iterparse(file_path, events=("end",), tag="report")
-    
-    for event, elem in context:
-        try:
-            # Only process the outer report which has a 'format_id' attribute.
-            if elem.get("format_id") is None:
-                continue
+def parse_xml_to_json(xml_file_path: str) -> dict:
+    """
+    Parses the provided XML file and extracts vulnerability result data.
+    Returns a dictionary with a single key "vulnerabilities" that holds a list of extracted results.
+    """
+    tree = etree.parse(xml_file_path)
+    root = tree.getroot()
 
-            # Extract metadata from the outer report element
-            report_id = elem.get("id")
-            owner = elem.findtext("owner/name")
-            creation_time = elem.findtext("creation_time")
-            modification_time = elem.findtext("modification_time")
-            
-            # Use an XPath query to locate all nested <result> elements
-            result_elements = elem.xpath(".//report/results/result")
-            results = []
-            for result_elem in result_elements:
-                vuln = {
-                    "result_id": result_elem.get("id"),
-                    "name": result_elem.findtext("name"),
-                    "severity": result_elem.findtext("severity"),
-                    "threat": result_elem.findtext("threat"),
-                    "description": result_elem.findtext("description")
-                }
-                results.append(vuln)
-            
-            # Prepare our report data dictionary
-            report_data = {
-                "report_id": report_id,
-                "owner": owner,
-                "creation_time": creation_time,
-                "modification_time": modification_time,
-                "results": results
-            }
-            
-            # Validate and transform with Pydantic
-            report_obj = VulnerabilityReport(**report_data)
-            yield report_obj.dict()
-        except ValidationError as ve:
-            logging.error(f"Validation error in report {report_id}: {ve}")
-        except Exception as e:
-            logging.error(f"Error parsing report: {e}")
-        finally:
-            # Clear the element to free memory
-            elem.clear()
-            while elem.getprevious() is not None:
-                del elem.getparent()[0]
+    # Use an XPath expression to locate all <result> elements nested under <report>/<results>
+    result_elements = root.xpath(".//report/results/result")
+    
+    vulnerabilities = []
+    for result in result_elements:
+        vuln = {}
+        # Basic fields
+        vuln["id"] = result.get("id")
+        vuln["title"] = result.findtext("name")
+        vuln["creation_time"] = result.findtext("creation_time")
+        vuln["modification_time"] = result.findtext("modification_time")
+        
+        # Process host info
+        host_elem = result.find("host")
+        host_info = {}
+        if host_elem is not None:
+            host_info["hostname"] = host_elem.findtext("hostname")
+            # Sometimes the IP appears as tail text after the hostname element
+            hostname_elem = host_elem.find("hostname")
+            if hostname_elem is not None and hostname_elem.tail:
+                host_info["ip"] = hostname_elem.tail.strip()
+        vuln["host"] = host_info
+
+        # Port info
+        vuln["port"] = result.findtext("port")
+        
+        # Extract details from <nvt>
+        nvt_elem = result.find("nvt")
+        nvt_info = {}
+        if nvt_elem is not None:
+            nvt_info["type"] = nvt_elem.findtext("type")
+            nvt_info["name"] = nvt_elem.findtext("name")
+            nvt_info["family"] = nvt_elem.findtext("family")
+            nvt_info["cvss_base"] = nvt_elem.findtext("cvss_base")
+            nvt_info["tags"] = nvt_elem.findtext("tags")
+            nvt_info["solution"] = nvt_elem.findtext("solution")
+            # Grab one severity detail if available
+            severity_elem = nvt_elem.find(".//severity")
+            if severity_elem is not None:
+                nvt_info["severity_score"] = severity_elem.findtext("score")
+                nvt_info["severity_value"] = severity_elem.findtext("value")
+        vuln["nvt"] = nvt_info
+
+        vuln["threat"] = result.findtext("threat")
+        vuln["severity"] = result.findtext("severity")
+        vuln["qod"] = result.findtext("qod/value")
+        vuln["description"] = result.findtext("description")
+
+        vulnerabilities.append(vuln)
+
+    return {"vulnerabilities": vulnerabilities}
+
 
 
 

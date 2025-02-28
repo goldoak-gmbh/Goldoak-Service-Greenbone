@@ -15,7 +15,7 @@ import xmltodict
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.api.modules.greenbone.utils.gvm_parser import (
-    parse_large_xml
+    parse_xml_to_json
 )
 
 from app.api.modules.greenbone.services.scan_service import (
@@ -260,13 +260,11 @@ def process_all_detailed_reports():
 # Read the XML reports and parse them to JSON 
 def process_xml_reports():
     """
-    Process new XML files in the DETAILED_REPORTS_DIR.
-    For each XML file:
-      - Parse it to JSON.
-      - Save the parsed JSON output to a file in a 'parsed' directory.
-      - Move the original XML file to the ARCHIVE_DIR.
+    For each XML file in DETAILED_REPORTS_DIR:
+      - Parse the file with parse_xml_to_json()
+      - Save the resulting JSON to a file in PARSED_DIR
+      - Archive the processed XML file into ARCHIVE_DIR
     """
-    # Ensure necessary directories exist
     os.makedirs(ARCHIVE_DIR, exist_ok=True)
     os.makedirs(PARSED_DIR, exist_ok=True)
 
@@ -278,27 +276,24 @@ def process_xml_reports():
     for file_name in xml_files:
         file_path = os.path.join(DETAILED_REPORTS_DIR, file_name)
         try:
-            # Process and parse the XML file.
-            # If you expect multiple reports per file and want separate JSONs:
-            for report_json in parse_large_xml(file_path):
-                report_id = report_json.get("report_id", "unknown")
-                vulnerability_count = len(report_json.get("results", []))
-                logger.info(f"Extracted report {report_id} with {vulnerability_count} vulnerabilities")
-                
-                # Save the parsed JSON to a file
-                timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-                parsed_filename = f"parsed_report_{report_id}_{timestamp}.json"
-                parsed_filepath = os.path.join(PARSED_DIR, parsed_filename)
-                with open(parsed_filepath, "w", encoding="utf-8") as outfile:
-                    json.dump(report_json, outfile, indent=2)
-                logger.info(f"Saved parsed report to {parsed_filepath}")
-
-                # Optionally, you could call ingest_report(report_json) here.
+            json_data = parse_xml_to_json(file_path)
+            
+            # Use the first vulnerability's id as the report id if available.
+            vulnerabilities = json_data.get("vulnerabilities", [])
+            report_id = vulnerabilities[0].get("id") if vulnerabilities else "unknown"
+            vuln_count = len(vulnerabilities)
+            logger.info(f"Extracted report {report_id} with {vuln_count} vulnerabilities")
+            
+            # Save parsed JSON file with a timestamp
+            timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+            parsed_filename = f"parsed_report_{report_id}_{timestamp}.json"
+            parsed_filepath = os.path.join(PARSED_DIR, parsed_filename)
+            with open(parsed_filepath, "w", encoding="utf-8") as outfile:
+                json.dump(json_data, outfile, indent=2)
+            logger.info(f"Saved parsed report to {parsed_filepath}")
 
             # Move the processed XML file to the archive directory
             shutil.move(file_path, os.path.join(ARCHIVE_DIR, file_name))
-            logger.info(f"Processed and archived file: {file_name}")
+            logger.info(f"Archived file: {file_name}")
         except Exception as e:
             logger.error(f"Error processing file {file_name}: {e}")
-
-
