@@ -58,10 +58,10 @@ def run_report_worker():
     scheduler.add_job(process_all_detailed_reports, 'interval', minutes=1)
 
     # Parse the XML files and save them
-    scheduler.add_job(process_xml_reports, 'interval', minutes=1)
+    scheduler.add_job(process_xml_reports, 'interval', minutes=5)
 
     # Ingest parsed files into elastic
-    scheduler.add_job(ingest_parsed_reports, 'interval', minutes=1)
+    scheduler.add_job(ingest_parsed_reports, 'interval', minutes=10)
 
     scheduler.start()
     logger.info("Report processing scheduler started.")
