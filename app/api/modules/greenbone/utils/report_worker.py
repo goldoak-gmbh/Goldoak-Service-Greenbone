@@ -88,6 +88,7 @@ def fetch_and_save_report_ids() -> str:
     if not report_ids:
         logger.info("No report IDs found in response.")
         return None
+    logger.info("Successfully saved report IDs.")
     return save_report_ids(report_ids)
 
 # Extracts the Report IDs
@@ -147,7 +148,7 @@ def fetch_and_save_report_task_mapping() -> dict:
     save_report_task_mapping(mapping)
     return mapping
 
-# Saving the data as a file
+# Saving the report task mapping as a file
 def save_report_task_mapping(mapping: dict) -> str:
     """
     Saves the report-task mapping to a file in REPORTS_DIR.

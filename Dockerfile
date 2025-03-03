@@ -1,11 +1,15 @@
 # Dockerfile for the Python Microservice
 FROM python:3.12-slim
 
+# Install OS packages for troubleshooting and general utilities
+RUN apt-get update && apt-get install -y \
+    iputils-ping \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
-
-# Install system dependencies if needed (optional)
-# RUN apt-get update && apt-get install -y build-essential
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
@@ -19,6 +23,7 @@ EXPOSE 8000
 
 # Run uvicorn to serve the FastAPI application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
 
 

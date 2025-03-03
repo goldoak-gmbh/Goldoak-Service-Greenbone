@@ -1,0 +1,79 @@
+# 🚀 Python `.gitignore`
+
+# 🔹 Bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 🔹 Virtual Environment
+venv/
+.env/
+.envrc
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 🔹 Dependency files
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# 🔹 IDE & Editor Configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 🚀 Docker `.gitignore`
+
+# 🔹 Docker files
+*.dockerignore
+Dockerfile*
+
+# 🔹 Docker Volumes & Logs
+docker-compose.override.yml
+volumes/
+logs/
+*.log
+*.pid
+
+# 🔹 Docker Build Cache
+.cache/
+.docker/
+
+# 🚀 Environment & Secrets
+# 🔥 DO NOT COMMIT CREDENTIALS 🔥
+.env
+.env.*
+*.secret
+config/secrets.json
+
+# 🚀 Python Build Artifacts
+build/
+dist/
+*.egg-info/
+MANIFEST
+
+# 🚀 Jupyter Notebooks
+.ipynb_checkpoints/
+
+# 🚀 Pytest & Coverage
+.coverage
+htmlcov/
+pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# 🚀 Migrations (Django/Flask)
+migrations/
+*/migrations/*
+
+# 🚀 Node.js (if frontend exists)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# 🚀 Temporary Files
+.DS_Store
+Thumbs.db
+
