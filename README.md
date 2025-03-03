@@ -60,7 +60,7 @@ version: "3.8"
 
 services:
   goldoak-module-greenbone:
-    image: ghcr.io/oa-goldoak/goldoak-module-greenbone:v0.4
+    image: ghcr.io/oa-goldoak/goldoak-module-greenbone:v0.7
     ports:
       - "8000:8000"
     environment:
@@ -68,12 +68,19 @@ services:
       - GVM_SOCKET_PATH=/tmp/gvmd/gvmd/gvmd.sock
       - REPORTS_DIR=/app/reports
       - DETAILED_REPORTS_DIR=/app/detailed_reports
+      - ARCHIVE_DIR=/app/detailed_reports/archive
+      - PARSED_DIR=/app/detailed_reports/parsed
+      - ES_HOST=""
+      - ES_USERNAME=""
+      - ES_PASSWORD=""
     volumes:
       # Mount the host directory containing the Unix socket.
       # Adjust the host path as needed.
       - /tmp/gvm/gvmd:/tmp/gvmd/gvmd:ro
       - /home/azureuser/Goldoak-Service-Greenbone/data/report_ids:/app/reports:rw
       - /home/azureuser/Goldoak-Service-Greenbone/data/reports:/app/detailed_reports:rw
+      - /home/azureuser/Goldoak-Service-Greenbone/data/reports/archive:/app/detailed_reports/archive
+      - /home/azureuser/Goldoak-Service-Greenbone/data/reports/parsed:/app/detailed_reports/parsed
     user: "1000:1000"  # Run as non-root user
 ```
 
@@ -98,7 +105,5 @@ gvm-cli --gmp-username admin --gmp-password admin socket --socketpath /tmp/gvm/g
 | Host Discovery | | `2d3f051c-55ba-11e3-bf43-406186ea4fc5` |
 | Huawei Datacom Product Security Configuration Audit Guide | Check compliance status of Huawei Datacom Device against above named Policy as distributed by Huawei. Version 20211209. | `aab5c4a1-eab1-4f4e-acac-8c36d08de6bc` |
 | IT-Grundschutz Kompendium | Policy f&#252;r Bausteine: SYS 1.2.2, SYS 2.2.2, SYS 2.2.3, SYS 1.3, SYS 2.3. Version 20210318. | `c4b7c0cb-6502-4809-b034-8e635311b3e6` |
-
-
 
 

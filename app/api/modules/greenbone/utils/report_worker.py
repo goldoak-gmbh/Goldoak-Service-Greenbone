@@ -13,9 +13,10 @@ import datetime
 import logging
 import subprocess
 import xmltodict
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Our packages
-from apscheduler.schedulers.background import BackgroundScheduler
+from app.api.modules.greenbone.utils.es_ingest import ingest_parsed_reports
 from app.api.modules.greenbone.utils.gvm_parser import (
     parse_xml_to_json
 )
@@ -58,6 +59,9 @@ def run_report_worker():
 
     # Parse the XML files and save them
     scheduler.add_job(process_xml_reports, 'interval', minutes=1)
+
+    # Ingest parsed files into elastic
+    scheduler.add_job(ingest_parsed_reports, 'interval', minutes=1)
 
     scheduler.start()
     logger.info("Report processing scheduler started.")
@@ -306,4 +310,5 @@ def process_xml_reports():
             logger.info(f"Archived file: {file_name}")
         except Exception as e:
             logger.error(f"Error processing file {file_name}: {e}")
+
 

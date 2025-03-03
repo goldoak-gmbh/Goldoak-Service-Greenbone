@@ -24,7 +24,7 @@ logging.basicConfig(
 ##################################################################
 
 app = FastAPI(
-    title="Goldoak Service Greenbone version 0.6",
+    title="Goldoak Service Greenbone version 0.7",
     description="With this module you can gather information of the greenbone vulnerability manager and work with it."
 )
 
