@@ -4,6 +4,7 @@
 # Importing packages                                             #
 ##################################################################
 
+# General
 import os
 import json
 import glob
@@ -12,8 +13,9 @@ import datetime
 import logging
 import subprocess
 import xmltodict
-from apscheduler.schedulers.background import BackgroundScheduler
 
+# Our packages
+from apscheduler.schedulers.background import BackgroundScheduler
 from app.api.modules.greenbone.utils.gvm_parser import (
     parse_xml_to_json
 )
@@ -67,6 +69,9 @@ def run_report_worker():
 # 2) Save the report ids in a file                                #
 # 3) For each entry in this file fetch the task_id of each report #
 # 4) Create another file to save the mapping between both ids     #
+# 5) Fetch detailed report via gvm and save the output            #
+# 6) Parse the report and save the JSON file                      # 
+# 7) Ingest the JSON file into elastic                            #
 ###################################################################
 
 ##################################################################
@@ -227,7 +232,6 @@ def fetch_and_save_detailed_report(report_id: str) -> None:
     else:
         logger.warning(f"Failed to fetch detailed report for report_id {report_id}")
 
-
 # Reads the file containing the report-task mapping
 def load_report_task_mapping(mapping_dir: str) -> dict:
     """
@@ -302,3 +306,4 @@ def process_xml_reports():
             logger.info(f"Archived file: {file_name}")
         except Exception as e:
             logger.error(f"Error processing file {file_name}: {e}")
+

@@ -1,14 +1,29 @@
+# app/api/modules/greenbone/utils/xml_report_worker.py
+
+##################################################################
+# Importing packages                                             #
+##################################################################
+
 import os
 import time
 import logging
 import shutil
+
 from app.api.modules.greenbone.utils.xml_parser import parse_large_xml
 #from app.api.modules.greenbone.utils.es_connector import ingest_report
+
+##################################################################
+# Environment variables and directories                          #
+##################################################################
 
 # Environment variables and directories
 REPORTS_DIR = os.environ.get("DETAILED_REPORTS_DIR", "/app/detailed_reports")
 ARCHIVE_DIR = os.path.join(REPORTS_DIR, "archive")
 SLEEP_INTERVAL = 60  # seconds
+
+##################################################################
+# Functions                                                      #
+##################################################################
 
 def process_files():
     """

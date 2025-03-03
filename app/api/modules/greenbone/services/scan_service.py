@@ -3,9 +3,9 @@
 ##################################################################
 # Importing packages                                             #
 ##################################################################
+
 import subprocess
 import xmltodict
-import subprocess
 import logging
 
 from app.api.core.config import (
@@ -18,17 +18,15 @@ from app.api.core.config import (
 # Create a Logger                                                #
 ##################################################################
 
-# Configure a logger for debugging purposes
+# Configuring a logger for debugging purposes
 logger = logging.getLogger(__name__)
-
 
 ##################################################################
 # Establish connection with Greenbone                            #
 ##################################################################
 
-# Adjust the socket path as needed (e.g., via configuration)
+# We can adjust the socket path as needed (e.g., via configuration)
 SOCKET_PATH = GVM_SOCKET_PATH
-
 
 ##################################################################
 # Define functions for communication                             #
@@ -65,12 +63,13 @@ def get_version() -> dict:
     xml = "<get_version/>"
     return run_gvm_command(xml)
 
+# Retrieve an overview of all available reports via gvm 
 def get_all_reports() -> dict:
     xml = "<get_reports/>"
     response = run_gvm_command(xml)
     return response  # then extract report IDs as needed
 
-
+# Create a scan target
 def create_target(name: str, hosts: str) -> str:
     """
     Creates a new target and returns its ID.
@@ -87,6 +86,7 @@ def create_target(name: str, hosts: str) -> str:
     target_id = response.get("create_target_response", {}).get("@id")
     return target_id
 
+# Create a scan task
 def create_task(name: str, target_id: str, scan_config_id: str) -> str:
     """
     Creates a scan task for the given target and configuration.
@@ -103,6 +103,7 @@ def create_task(name: str, target_id: str, scan_config_id: str) -> str:
     task_id = response.get("create_task_response", {}).get("@id")
     return task_id
 
+# Start a scan task
 def start_task(task_id: str) -> None:
     """
     Starts a scan task given its ID.
@@ -110,6 +111,7 @@ def start_task(task_id: str) -> None:
     xml = f"<start_task task_id='{task_id}'/>"
     run_gvm_command(xml)
 
+# Get report details of a scan
 def get_report(report_id: str) -> dict:
     """
     Retrieves the report details.
@@ -117,3 +119,6 @@ def get_report(report_id: str) -> dict:
     xml = f"<get_report report_id='{report_id}' details='1'/>"
     response = run_gvm_command(xml)
     return response
+
+
+

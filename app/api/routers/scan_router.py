@@ -21,6 +21,7 @@ class ScanRequest(BaseModel):
     hosts: str
     scan_config_id: str
 
+# Getting version infor from the GVM-Socket
 @router.get("/version")
 async def get_version():
     try:
@@ -29,6 +30,7 @@ async def get_version():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Display overview of all available reports
 @router.get("/reports")
 async def fetch_all_reports():
     try:
@@ -42,6 +44,7 @@ async def fetch_all_reports():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Start a Vulnerability Scan
 @router.post("/scan")
 async def trigger_scan(request: ScanRequest):
     try:
@@ -51,4 +54,6 @@ async def trigger_scan(request: ScanRequest):
         return {"message": "Scan started", "task_id": task_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 

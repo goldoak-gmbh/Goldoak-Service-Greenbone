@@ -1,4 +1,5 @@
 # app/api/modules/greenbone/utils/gvm_parser.py
+
 ##################################################################
 # Importing packages                                             #
 ##################################################################
@@ -32,7 +33,7 @@ def parse_report_summary(report: dict) -> dict:
     report_details = report.get("report", {})
     summary = {
         "report_id": report.get("@id"),
-#        "report_name": report.get("name"),
+#        "report_name": report.get("name"), # Not needed anymore
         "scan_start": report_details.get("scan_start"),
         "scan_end": report_details.get("scan_end"),
     }
@@ -67,10 +68,10 @@ def parse_all_reports(reports_response: dict) -> list:
         reports = [reports]
     return [parse_report_summary(report) for report in reports]
 
-
 ##################################################################
 # Our Parser for detailed reports                                #
 ##################################################################
+
 # Define a Pydantic model for report-level data
 class VulnerabilityReport(BaseModel):
     report_id: str
@@ -138,7 +139,6 @@ def parse_xml_to_json(xml_file_path: str) -> dict:
         vulnerabilities.append(vuln)
 
     return {"vulnerabilities": vulnerabilities}
-
 
 
 
