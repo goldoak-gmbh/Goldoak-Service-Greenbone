@@ -193,13 +193,16 @@ def extract_report_task_mapping(raw_response: dict) -> dict:
 # Function that fetches the report with the help of the task_id
 def fetch_and_save_detailed_report(report_id: str) -> None:
     """
-    Fetches the detailed report for the given report_id using the new <get_reports>
-    command (with filtering, details, and format_id parameters) and saves it to a file.
-    If a file for this report_id already exists in DETAILED_REPORTS_DIR, it will skip saving.
+    Fetches the detailed report for the given report_id using the <get_reports> command.
+    If a file for this report_id already exists in either DETAILED_REPORTS_DIR or ARCHIVE_DIR,
+    it will skip fetching and saving a new report.
     """
-    # Check if any file exists with the prefix for this report_id
-    pattern = os.path.join(DETAILED_REPORTS_DIR, f"detailed_report_{report_id}_*.xml")
-    existing_files = glob.glob(pattern)
+    # Build patterns for both directories
+    pattern_detailed = os.path.join(DETAILED_REPORTS_DIR, f"detailed_report_{report_id}_*.xml")
+    pattern_archive = os.path.join(ARCHIVE_DIR, f"detailed_report_{report_id}_*.xml")
+    
+    # Check both directories for existing files
+    existing_files = glob.glob(pattern_detailed) + glob.glob(pattern_archive)
     if existing_files:
         logger.info(f"Detailed report for report_id {report_id} already exists. Skipping.")
         return
@@ -222,6 +225,7 @@ def fetch_and_save_detailed_report(report_id: str) -> None:
         logger.info(f"Saved detailed report for report_id {report_id} to {filepath}")
     else:
         logger.warning(f"Failed to fetch detailed report for report_id {report_id}")
+
 
 # Reads the file containing the report-task mapping
 def load_report_task_mapping(mapping_dir: str) -> dict:
